@@ -76,12 +76,12 @@ Dictionary.prototype = {
     },
     max: function(iterator, context) {
         var self = this;
-        var tmp = _.max(this.table, iterator ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } : undefined);
+        var tmp = _.max(this.table, iterator ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } : function(v) { return v[1] });
         return tmp === undefined ? undefined : tmp[1];
     },
     min: function(iterator, context) {
         var self = this;
-        var tmp = _.min(this.table, iterator ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } : undefined);
+        var tmp = _.min(this.table, iterator ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } : function(v) { return v[1] });
         return tmp instanceof Array ? tmp[1] : tmp;
     },
     sortBy: function(iterator, context) {
@@ -92,7 +92,7 @@ Dictionary.prototype = {
     groupBy: function(iterator, context) {
         // TODO: consider returning a dictionary ?
         var self = this;
-        var tmp = _.groupBy(this.table, typeof iterator === "function" ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } :  :
+        var tmp = _.groupBy(this.table, typeof iterator === "function" ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } :
             function(v) {return v[1][iterator]});
         _.each(_.keys(tmp), function(k) {
             tmp[k] = _.pluck(tmp[k], 1);
@@ -101,10 +101,9 @@ Dictionary.prototype = {
     },
     countBy: function(iterator, context) {
         var self = this;
-        return _.countBy(this.table, typeof iterator === "function" ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } :  :
+        return _.countBy(this.table, typeof iterator === "function" ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } :
             function(v) {return v[1][iterator]});
     },
-    //TODO: use to_string before this point
     shuffle: function() {
         var self = this;
         return _.shuffle(this.toArray());
@@ -199,6 +198,9 @@ Dictionary.prototype = {
     },
     isEmpty: function() {
         return this.size() === 0;
-    }
-    //TODO: isEqual
+    },
+    isEqual: function(other) {
+        // not sure this will work
+        return _.isEqual(this.table, other.table);
+    }, 
 }
