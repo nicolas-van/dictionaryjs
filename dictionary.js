@@ -1,3 +1,8 @@
+/*
+    Copyright Nicolas Vanhoren, 2012
+
+    Released under the terms of the MIT license.
+*/
 
 Dictionary = function() {
     this.table = {};
