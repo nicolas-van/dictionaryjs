@@ -168,7 +168,7 @@ test("groupBy", function() {
     equal(res[9][0].xxx, 9);
 });
 
-test("groupBy", function() {
+test("countBy", function() {
     var tmp = new Dictionary().set(8, {xxx:5}).set(9, {xxx:9}).set(10, {xxx:5});
     var res = tmp.countBy("xxx");
     equal(res[5], 2);
@@ -178,26 +178,6 @@ test("groupBy", function() {
 
 /*
 
-    sortBy: function(iterator, context) {
-        var self = this;
-        return _.pluck(_.sortBy(this.table, typeof iterator === "function" ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } :
-            function(v) {return v[1][iterator]}), 1);
-    },
-    groupBy: function(iterator, context) {
-        // TODO: consider returning a dictionary ?
-        var self = this;
-        var tmp = _.groupBy(this.table, typeof iterator === "function" ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } :
-            function(v) {return v[1][iterator]});
-        _.each(_.keys(tmp), function(k) {
-            tmp[k] = _.pluck(tmp[k], 1);
-        })
-        return tmp;
-    },
-    countBy: function(iterator, context) {
-        var self = this;
-        return _.countBy(this.table, typeof iterator === "function" ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } :
-            function(v) {return v[1][iterator]});
-    },
     shuffle: function() {
         var self = this;
         return _.shuffle(this.toArray());
