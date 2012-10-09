@@ -163,9 +163,9 @@ test("sortBy", function() {
 test("groupBy", function() {
     var tmp = new Dictionary().set(8, {xxx:5}).set(9, {xxx:9}).set(10, {xxx:5});
     var res = tmp.groupBy("xxx");
-    equal(res[5][0].xxx, 5);
-    equal(res[5][1].xxx, 5);
-    equal(res[9][0].xxx, 9);
+    equal(res.get(5)[0].xxx, 5);
+    equal(res.get(5)[1].xxx, 5);
+    equal(res.get(9)[0].xxx, 9);
 });
 
 test("countBy", function() {
@@ -175,102 +175,109 @@ test("countBy", function() {
     equal(res[9], 1);
 });
 
+test("shuffle", function() {
+    var tmp = new Dictionary().set(8, 5);
+    var res = tmp.shuffle();
+    equal(res[0], 5);
+});
 
-/*
+test("size", function() {
+    var tmp = new Dictionary().set(8, 5).set(9, 5);
+    equal(tmp.size(), 2);
+});
 
-    shuffle: function() {
-        var self = this;
-        return _.shuffle(this.toArray());
-    },
-    toArray: function() {
-        var self = this;
-        return _.pluck(this.table, 1);
-    },
-    size: function() {
-        return _.size(this.table);
-    },
-    keys: function() {
-        return _.pluck(this.table, 0);
-    },
-    values: function() {
-        return this.toArray();
-    },
-    pairs: function() {
-        return this.map(function(v, k) {return [k, v];});
-    },
-    invert: function() {
-        var tmp = new Dictionary();
-        this.each(function(v, k) {
-            tmp.set(v, k);
-        });
-        return tmp;
-    },
-    functions: function() {
-        var tmp = {};
-        return _.filter(this.map(function(v, k) {return typeof v === "function" ? k : tmp}), function(el) {return el !== tmp});;
-    },
-    extend: function() {
-        var self = this;
-        _.each(_.toArray(arguments), function(el) {
-            if (el instanceof Dictionary) {
-                el.each(function(v, k) {
-                    self.set(k, v);
-                });
-            } else {
-                _.each(el, function(v, k) {
-                    self.set(k, v);
-                });
-            }
-        });
-        return this;
-    },
-    clone: function() {
-        var tmp = new Dictionary();
-        tmp.to_string = this.to_string();
-        return tmp.extend(this);
-    },
-    pick: function() {
-        var self = this;
-        var tmp = this.clone();
-        var index = {}
-        _.each(_.toArray(arguments), function(k) {
-            index[self.to_string(k)] = true;
-        });
-        _.each(tmp.keys(), function(k) {
-            if (! index[self.to_string(k)])
-                tmp.set(k, undefined);
-        });
-        return tmp;
-    },
-    omit: function() {
-        var self = this;
-        var tmp = this.clone();
-        var index = {}
-        _.each(_.toArray(arguments), function(k) {
-            index[self.to_string(k)] = true;
-        });
-        _.each(tmp.keys(), function(k) {
-            if (!! index[self.to_string(k)])
-                tmp.set(k, undefined);
-        });
-        return tmp;
-    },
-    defaults: function() {
-        _.each(_.toArray(arguments), function(def) {
-            if (! (def instanceof Dictionary))
-                def = (new Dictionary()).extend(def);
-            def.each(function(v, k) {
-                var tmp = self.get(k);
-                if (tmp === undefined || tmp === null)
-                    self.set(k, v);
-            });
-        });
-        return this;
-    },
-    has: function(key) {
-        return this.get(key) !== undefined;
-    },
-    isEmpty: function() {
-        return this.size() === 0;
-    }
-    */
+test("keys", function() {
+    var tmp = new Dictionary().set(8, 5);
+    equal(tmp.keys()[0], 8);
+});
+
+test("values", function() {
+    var tmp = new Dictionary().set(8, 5);
+    equal(tmp. values()[0], 5);
+});
+
+test("pairs", function() {
+    var tmp = new Dictionary().set(8, 5);
+    var res = tmp.pairs();
+    equal(res[0][0], 8);
+    equal(res[0][1], 5);
+});
+
+test("invert", function() {
+    var tmp = new Dictionary().set(8, 5);
+    var res = tmp.invert();
+    equal(res.get(5), 8);
+    equal(res.get(8), undefined);
+});
+
+test("functions", function() {
+    var tmp = new Dictionary().set(8, 5).set(9, function(){});
+    var res = tmp.functions();
+    equal(res.length, 1);
+    equal(res[0], 9);
+});
+
+test("extend", function() {
+    var tmp = new Dictionary().set(8, 5);
+    var tmp2 = new Dictionary().set(9, 15);
+    tmp.extend(tmp2);
+    equal(tmp.size(), 2);
+    equal(tmp.get(8), 5);
+    equal(tmp.get(9), 15);
+    tmp = new Dictionary().set(8, 5);
+    tmp2 = new Dictionary().set(8, 15);
+    tmp.extend(tmp2);
+    equal(tmp.size(), 1);
+    equal(tmp.get(8), 15);
+    tmp = new Dictionary().set("a", 5);
+    tmp.extend({"b": 15});
+    equal(tmp.size(), 2);
+    equal(tmp.get("a"), 5);
+    equal(tmp.get("b"), 15);
+    tmp = new Dictionary().set("a", 5);
+    tmp.extend({"a": 15});
+    equal(tmp.size(), 1);
+    equal(tmp.get("a"), 15);
+});
+
+test("clone", function() {
+    var tmp = new Dictionary().set(8, 5);
+    var res = tmp.clone();
+    equal(res.size(), 1);
+    equal(res.get(8), 5);
+});
+
+test("pick", function() {
+    var tmp = new Dictionary().set(8, 5).set(9, 6);
+    var res = tmp.pick(9);
+    equal(res.get(9), 6);
+    equal(res.get(8), undefined);
+});
+
+test("omit", function() {
+    var tmp = new Dictionary().set(8, 5).set(9, 6);
+    var res = tmp.omit(8);
+    equal(res.get(9), 6);
+    equal(res.get(8), undefined);
+});
+
+test("defaults", function() {
+    var tmp = new Dictionary().set(8, 5);
+    var res = tmp.defaults(new Dictionary().set(8, 6).set(9,10));
+    equal(res.get(8), 5);
+    equal(res.get(9), 10);
+});
+
+test("has", function() {
+    var tmp = new Dictionary().set(8, 5);
+    equal(tmp.has(8), true);
+    equal(tmp.has(9), false);
+});
+
+test("isEmpty", function() {
+    var tmp = new Dictionary();
+    equal(tmp.isEmpty(), true);
+    tmp.set(8,5);
+    equal(tmp.isEmpty(), false);
+});
+

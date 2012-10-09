@@ -6,9 +6,10 @@
 
 Dictionary = function() {
     this.table = {};
-    this.to_string = function(val) {return val};
+    this.to_string = Dictionary.default_to_string;
 }
 
+Dictionary.default_to_string = function(val) {return val};
 
 Dictionary.prototype = {
     set: function(k, v) {
@@ -89,15 +90,21 @@ Dictionary.prototype = {
         return _.pluck(_.sortBy(this.table, typeof iterator === "function" ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } :
             function(v) {return v[1][iterator]}), 1);
     },
-    groupBy: function(iterator, context) {
-        // TODO: consider returning a dictionary ?
+    /*
+        Returns a Dictionary.
+    */
+    groupBy: function(iterator, context, new_to_string) {
         var self = this;
-        var tmp = _.groupBy(this.table, typeof iterator === "function" ? function(v) { return _.bind(iterator, context)(v[1], v[0], self) } :
-            function(v) {return v[1][iterator]});
-        _.each(_.keys(tmp), function(k) {
-            tmp[k] = _.pluck(tmp[k], 1);
-        })
-        return tmp;
+        var dict = new Dictionary();
+        dict.to_string = new_to_string || Dictionary.default_to_string;
+        var fct = typeof iterator === "function" ? _.bind(iterator, context) : function(v) {return v[iterator]};
+        this.each(function(v, k) {
+            var tmp = fct(v, k, self);
+            if (dict.get(tmp) === undefined)
+                dict.set(tmp, []);
+            dict.get(tmp).push(v);
+        });
+        return dict;
     },
     countBy: function(iterator, context) {
         var self = this;
@@ -124,8 +131,9 @@ Dictionary.prototype = {
     pairs: function() {
         return this.map(function(v, k) {return [k, v];});
     },
-    invert: function() {
+    invert: function(new_to_string) {
         var tmp = new Dictionary();
+        tmp.to_string = new_to_string || Dictionary.default_to_string;
         this.each(function(v, k) {
             tmp.set(v, k);
         });
@@ -152,19 +160,20 @@ Dictionary.prototype = {
     },
     clone: function() {
         var tmp = new Dictionary();
-        tmp.to_string = this.to_string();
+        tmp.to_string = this.to_string;
         return tmp.extend(this);
     },
     pick: function() {
         var self = this;
         var tmp = this.clone();
-        var index = {}
+        var index = {};
         _.each(_.toArray(arguments), function(k) {
             index[self.to_string(k)] = true;
         });
         _.each(tmp.keys(), function(k) {
-            if (! index[self.to_string(k)])
+            if (! index[self.to_string(k)]) {
                 tmp.set(k, undefined);
+            }
         });
         return tmp;
     },
@@ -182,6 +191,7 @@ Dictionary.prototype = {
         return tmp;
     },
     defaults: function() {
+        var self = this;
         _.each(_.toArray(arguments), function(def) {
             if (! (def instanceof Dictionary))
                 def = (new Dictionary()).extend(def);
@@ -197,7 +207,7 @@ Dictionary.prototype = {
         return this.get(key) !== undefined;
     },
     isEmpty: function() {
-        return this.size() === 0;
+        return _.isEmpty(this.table);
     },
     isEqual: function(other) {
         // not sure this will work
