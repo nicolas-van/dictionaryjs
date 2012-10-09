@@ -229,6 +229,7 @@ test("extend", function() {
     tmp.extend(tmp2);
     equal(tmp.size(), 1);
     equal(tmp.get(8), 15);
+
     tmp = new Dictionary().set("a", 5);
     tmp.extend({"b": 15});
     equal(tmp.size(), 2);
@@ -236,6 +237,16 @@ test("extend", function() {
     equal(tmp.get("b"), 15);
     tmp = new Dictionary().set("a", 5);
     tmp.extend({"a": 15});
+    equal(tmp.size(), 1);
+    equal(tmp.get("a"), 15);
+
+    tmp = new Dictionary().set("a", 5);
+    tmp.extend([["b", 15]]);
+    equal(tmp.size(), 2);
+    equal(tmp.get("a"), 5);
+    equal(tmp.get("b"), 15);
+    tmp = new Dictionary().set("a", 5);
+    tmp.extend([["a", 15]]);
     equal(tmp.size(), 1);
     equal(tmp.get("a"), 15);
 });
@@ -279,5 +290,12 @@ test("isEmpty", function() {
     equal(tmp.isEmpty(), true);
     tmp.set(8,5);
     equal(tmp.isEmpty(), false);
+});
+
+test("constructor", function() {
+    var tmp = new Dictionary().set(8,9);
+    var tmp2 = new Dictionary(tmp, {"haha": "blop"});
+    equal(tmp2.get(8), 9);
+    equal(tmp2.get("haha"), "blop");
 });
 

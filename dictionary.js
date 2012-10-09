@@ -7,6 +7,7 @@
 Dictionary = function() {
     this.table = {};
     this.to_string = Dictionary.default_to_string;
+    this.extend.apply(this, arguments);
 }
 
 Dictionary.default_to_string = function(val) {return val};
@@ -143,12 +144,19 @@ Dictionary.prototype = {
         var tmp = {};
         return _.filter(this.map(function(v, k) {return typeof v === "function" ? k : tmp}), function(el) {return el !== tmp});;
     },
+    /*
+        Accepts objects, Dictionary or list of tuples
+    */
     extend: function() {
         var self = this;
         _.each(_.toArray(arguments), function(el) {
             if (el instanceof Dictionary) {
                 el.each(function(v, k) {
                     self.set(k, v);
+                });
+            } else if (el instanceof Array) {
+                _.each(el, function(v) {
+                    self.set(v[0], v[1]);
                 });
             } else {
                 _.each(el, function(v, k) {
